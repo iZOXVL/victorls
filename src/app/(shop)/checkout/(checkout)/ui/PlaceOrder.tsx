@@ -6,6 +6,7 @@ import clsx from 'clsx';
 
 import { placeOrder } from '@/actions';
 import { useAddressStore, useCartStore } from "@/store";
+import { useCreditCardStore } from "@/store/payment/payment-store";
 import { currencyFormat } from '@/utils';
 
 export const PlaceOrder = () => {
@@ -19,31 +20,34 @@ export const PlaceOrder = () => {
 
   const address = useAddressStore((state) => state.address);
 
+  const payment = useCreditCardStore((state) => state.creditCard);
+
+
+
   const { itemsInCart, subTotal, tax, total } = useCartStore((state) =>
     state.getSummaryInformation()
   );
-  const cart = useCartStore( state => state.cart );
-  const clearCart = useCartStore( state => state.clearCart );
+  const cart = useCartStore(state => state.cart);
+  const clearCart = useCartStore(state => state.clearCart);
 
   useEffect(() => {
     setLoaded(true);
   }, []);
 
 
-  const onPlaceOrder = async() => {
+  const onPlaceOrder = async () => {
     setIsPlacingOrder(true);
     // await sleep(2);
 
-    const productsToOrder = cart.map( product => ({
+    const productsToOrder = cart.map(product => ({
       productId: product.id,
-      quantity: product.quantity,
-      size: product.size,
+      quantity: product.quantity
     }))
 
 
     //! Server Action
-    const resp = await placeOrder( productsToOrder, address);
-    if ( !resp.ok ) {
+    const resp = await placeOrder(productsToOrder, address);
+    if (!resp.ok) {
       setIsPlacingOrder(false);
       setErrorMessage(resp.message);
       return;
@@ -51,7 +55,7 @@ export const PlaceOrder = () => {
 
     //* Todo salio bien!
     clearCart();
-    router.replace('/orders/' + resp.order?.id );
+    router.replace('/orders/' + resp.order?.id);
 
 
   }
@@ -79,6 +83,7 @@ export const PlaceOrder = () => {
         <p>{address.phone}</p>
       </div>
 
+
       {/* Divider */}
       <div className="w-full h-0.5 rounded bg-gray-200 mb-10" />
 
@@ -93,7 +98,7 @@ export const PlaceOrder = () => {
         <span>Subtotal</span>
         <span className="text-right">{currencyFormat(subTotal)}</span>
 
-        <span>Impuestos (15%)</span>
+        <span>Impuestos (12%)</span>
         <span className="text-right">{currencyFormat(tax)}</span>
 
         <span className="mt-5 text-2xl">Total:</span>
@@ -118,11 +123,11 @@ export const PlaceOrder = () => {
         </p>
 
 
-        <p className="text-red-500">{ errorMessage }</p>
+        <p className="text-red-500">{errorMessage}</p>
 
         <button
           // href="/orders/123"
-          onClick={ onPlaceOrder }
+          onClick={onPlaceOrder}
           className={
             clsx({
               'btn-primary': !isPlacingOrder,

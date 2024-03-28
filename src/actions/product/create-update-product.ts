@@ -2,10 +2,10 @@
 
 import prisma from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
-import { Gender, Product, Size } from '@prisma/client';
+import { Gender, Product } from '@prisma/client';
 import { z } from 'zod';
-import {v2 as cloudinary} from 'cloudinary';
-cloudinary.config( process.env.CLOUDINARY_URL ?? '' );
+import { v2 as cloudinary } from 'cloudinary';
+cloudinary.config(process.env.CLOUDINARY_URL ?? '');
 
 
 
@@ -17,15 +17,14 @@ const productSchema = z.object({
   price: z.coerce
     .number()
     .min(0)
-    .transform( val => Number(val.toFixed(2)) ),
+    .transform(val => Number(val.toFixed(2))),
   inStock: z.coerce
     .number()
     .min(0)
-    .transform( val => Number(val.toFixed(0)) ),
+    .transform(val => Number(val.toFixed(0))),
   categoryId: z.string().uuid(),
-  sizes: z.coerce.string().transform( val => val.split(',') ),
   tags: z.string(),
-  gender: z.nativeEnum(Gender), 
+  gender: z.nativeEnum(Gender),
 });
 
 
@@ -34,80 +33,74 @@ const productSchema = z.object({
 
 
 
-export const createUpdateProduct = async( formData: FormData ) => {
+export const createUpdateProduct = async (formData: FormData) => {
 
-  const data = Object.fromEntries( formData );
-  const productParsed = productSchema.safeParse( data );
+  const data = Object.fromEntries(formData);
+  const productParsed = productSchema.safeParse(data);
 
-  if ( !productParsed.success) {
-    console.log( productParsed.error );
+  if (!productParsed.success) {
+    console.log(productParsed.error);
     return { ok: false }
   }
 
   const product = productParsed.data;
-  product.slug = product.slug.toLowerCase().replace(/ /g, '-' ).trim();
+  product.slug = product.slug.toLowerCase().replace(/ /g, '-').trim();
 
 
   const { id, ...rest } = product;
 
   try {
-    const prismaTx = await prisma.$transaction( async (tx) => {
-  
+    const prismaTx = await prisma.$transaction(async (tx) => {
+
       let product: Product;
-      const tagsArray = rest.tags.split(',').map( tag => tag.trim().toLowerCase() );
-  
-      if ( id ) {
+      const tagsArray = rest.tags.split(',').map(tag => tag.trim().toLowerCase());
+
+      if (id) {
         // Actualizar
         product = await prisma.product.update({
           where: { id },
           data: {
             ...rest,
-            sizes: {
-              set: rest.sizes as Size[],
-            },
             tags: {
               set: tagsArray
             }
           }
         });
-  
+
       } else {
         // Crear
         product = await prisma.product.create({
           data: {
             ...rest,
-            sizes: {
-              set: rest.sizes as Size[],
-            },
             tags: {
               set: tagsArray
             }
           }
         })
       }
-  
-      
+
+
       // Proceso de carga y guardado de imagenes
       // Recorrer las imagenes y guardarlas
-      if ( formData.getAll('images') ) {
+      if (formData.getAll('images')) {
         // [https://url.jpg, https://url.jpg]
         const images = await uploadImages(formData.getAll('images') as File[]);
-        if ( !images ) {
+        if (!images) {
           throw new Error('No se pudo cargar las imágenes, rollingback');
         }
 
         await prisma.productImage.createMany({
-          data: images.map( image => ({
+          data: images.map(image => ({
             url: image!,
             productId: product.id,
           }))
         });
 
       }
-  
-  
-  
-      
+
+
+
+
       return {
         product
       }
@@ -116,8 +109,8 @@ export const createUpdateProduct = async( formData: FormData ) => {
 
     // Todo: RevalidatePaths
     revalidatePath('/admin/products');
-    revalidatePath(`/admin/product/${ product.slug }`);
-    revalidatePath(`/products/${ product.slug }`);
+    revalidatePath(`/admin/product/${product.slug}`);
+    revalidatePath(`/products/${product.slug}`);
 
 
     return {
@@ -125,9 +118,9 @@ export const createUpdateProduct = async( formData: FormData ) => {
       product: prismaTx.product,
     }
 
-    
+
   } catch (error) {
-    
+
     return {
       ok: false,
       message: 'Revisar los logs, no se pudo actualizar/crear'
@@ -138,19 +131,19 @@ export const createUpdateProduct = async( formData: FormData ) => {
 
 
 
-const uploadImages = async( images: File[] ) => {
+const uploadImages = async (images: File[]) => {
 
   try {
 
-    const uploadPromises = images.map( async( image) => {
+    const uploadPromises = images.map(async (image) => {
 
       try {
         const buffer = await image.arrayBuffer();
         const base64Image = Buffer.from(buffer).toString('base64');
-  
-        return cloudinary.uploader.upload(`data:image/png;base64,${ base64Image }`)
-          .then( r => r.secure_url );
-        
+
+        return cloudinary.uploader.upload(`data:image/png;base64,${base64Image}`)
+          .then(r => r.secure_url);
+
       } catch (error) {
         console.log(error);
         return null;
@@ -158,7 +151,7 @@ const uploadImages = async( images: File[] ) => {
     })
 
 
-    const uploadedImages = await Promise.all( uploadPromises );
+    const uploadedImages = await Promise.all(uploadPromises);
     return uploadedImages;
 
 
@@ -166,7 +159,7 @@ const uploadImages = async( images: File[] ) => {
 
     console.log(error);
     return null;
-    
+
   }
 
 

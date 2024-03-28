@@ -66,12 +66,6 @@ export default async function OrdersPage({ searchParams }: Props) {
               >
                 Inventario
               </th>
-              <th
-                scope="col"
-                className="text-sm font-medium text-gray-900 px-6 py-4 text-left"
-              >
-                Tallas
-              </th>
             </tr>
           </thead>
           <tbody>
@@ -83,7 +77,7 @@ export default async function OrdersPage({ searchParams }: Props) {
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                   <Link href={`/product/${product.slug}`}>
                     <ProductImage
-                      src={ product.ProductImage[0]?.url }
+                      src={product.ProductImage[0]?.url}
                       width={80}
                       height={80}
                       alt={product.title}
@@ -109,10 +103,6 @@ export default async function OrdersPage({ searchParams }: Props) {
 
                 <td className="text-sm text-gray-900 font-bold px-6 py-4 whitespace-nowrap">
                   {product.inStock}
-                </td>
-
-                <td className="text-sm text-gray-900 font-bold px-6 py-4 whitespace-nowrap">
-                  {product.sizes.join(", ")}
                 </td>
               </tr>
             ))}

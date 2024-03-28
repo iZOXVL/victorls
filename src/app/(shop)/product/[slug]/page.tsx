@@ -40,7 +40,7 @@ export async function generateMetadata(
       title: product?.title ?? "Producto no encontrado",
       description: product?.description ?? "",
       // images: [], // https://misitioweb.com/products/image.png
-      images: [ `/products/${ product?.images[1] }`],
+      images: [`/products/${product?.images[1]}`],
     },
   };
 }
@@ -75,19 +75,27 @@ export default async function ProductBySlugPage({ params }: Props) {
 
       {/* Detalles */}
       <div className="col-span-1 px-5">
-        <StockLabel slug={product.slug} />
+
 
         <h1 className={` ${titleFont.className} antialiased font-bold text-xl`}>
           {product.title}
         </h1>
 
-        <p className="text-lg mb-5">${product.price}</p>
 
-        <AddToCart product={ product } />
+        <p className="text-lg mb-5">
+          {product.price.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}
+        </p>
+
+
+        <StockLabel slug={product.slug} />
+
+        <AddToCart product={product} />
 
         {/* Descripción */}
         <h3 className="font-bold text-sm">Descripción</h3>
         <p className="font-light">{product.description}</p>
+
+
       </div>
     </div>
   );

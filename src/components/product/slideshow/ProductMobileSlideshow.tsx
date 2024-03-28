@@ -22,11 +22,11 @@ interface Props {
 
 
 
-export const ProductMobileSlideshow = ( { images, title, className }: Props ) => {
+export const ProductMobileSlideshow = ({ images, title, className }: Props) => {
 
 
   return (
-    <div className={ className }>
+    <div className={className}>
 
       <Swiper
         style={{
@@ -37,23 +37,23 @@ export const ProductMobileSlideshow = ( { images, title, className }: Props ) =>
         autoplay={{
           delay: 2500
         }}
-        modules={ [ FreeMode, Autoplay, Pagination ] }
+        modules={[FreeMode, Autoplay, Pagination]}
         className="mySwiper2"
       >
 
         {
-          images.map( image => (
-            <SwiperSlide key={ image }>
+          images.map(image => (
+            <SwiperSlide key={image}>
               <Image
-                width={ 600 }
-                height={ 500 }
-                src={ `/products/${ image }` }
-                alt={ title }
+                width={600}
+                height={500}
+                src={`/products/${image}`}
+                alt={title}
                 className="object-fill"
               />
             </SwiperSlide>
 
-          ) )
+          ))
         }
       </Swiper>
 
